@@ -26,9 +26,10 @@ Requires macOS 13 or later. Tested on macOS 27 (Apple Silicon).
    xattr -d com.apple.quarantine /Applications/BatteryMenubar.app
    ```
 
-4. A small bolt icon appears in the menu bar. Open its menu and turn on **Launch at Login**.
+4. Unplug the adapter. The battery item appears together with a small slashed-bolt icon;
+   open that icon's menu and turn on **Launch at Login**.
 
-Unplug and replug the adapter to see the battery icon disappear and reappear.
+Replug the adapter and both icons disappear.
 
 ### Build it yourself
 
@@ -43,15 +44,10 @@ cd battery_menubar
 
 ## Use
 
-The menu bar icon shows the current mode:
-
-| Icon   | Meaning                                       |
-| ------ | --------------------------------------------- |
-| bolt   | On power adapter, system battery icon hidden  |
-| bolt with slash | On battery, system battery icon shown |
-
-The menu has **Launch at Login** and **Quit**. Quitting puts the battery menu bar item back
-exactly as it was before the app first ran.
+While on the power adapter nothing is shown. While on battery, the system battery item
+(with percentage) appears together with a small slashed-bolt icon that opens the app's menu:
+**Launch at Login** and **Quit**. Quitting puts the battery menu bar item back exactly as it
+was before the app first ran.
 
 ## Uninstall
 
@@ -148,9 +144,10 @@ macOS 13 이상이 필요합니다. macOS 27 (Apple Silicon)에서 테스트했�
    xattr -d com.apple.quarantine /Applications/BatteryMenubar.app
    ```
 
-4. 메뉴 막대에 작은 번개 아이콘이 생깁니다. 메뉴를 열어 **Launch at Login**을 켜 두세요.
+4. 어댑터를 뽑으면 배터리 항목과 함께 작은 빗금 번개 아이콘이 나타납니다.
+   그 아이콘의 메뉴를 열어 **Launch at Login**을 켜 두세요.
 
-어댑터를 뺐다 꽂아 보면 배터리 아이콘이 나타났다 사라지는 것을 확인할 수 있습니다.
+어댑터를 다시 꽂으면 두 아이콘 모두 사라집니다.
 
 #### 직접 빌드
 
@@ -165,15 +162,9 @@ cd battery_menubar
 
 ### 사용
 
-메뉴 막대 아이콘이 현재 모드를 보여줍니다:
-
-| 아이콘        | 의미                                   |
-| ------------- | -------------------------------------- |
-| 번개          | 어댑터 연결 중, 시스템 배터리 아이콘 숨김 |
-| 빗금 친 번개  | 배터리 사용 중, 시스템 배터리 아이콘 표시 |
-
-메뉴에는 **Launch at Login**(로그인 시 실행)과 **Quit**(종료)이 있습니다.
-종료하면 배터리 메뉴 막대 항목이 앱을 처음 실행하기 전 상태로 정확히 돌아갑니다.
+어댑터 연결 중에는 아무것도 표시하지 않습니다. 배터리 사용 중에는 시스템 배터리 항목(퍼센트 포함)과
+함께 작은 빗금 번개 아이콘이 나타나며, 이 아이콘의 메뉴에 **Launch at Login**(로그인 시 실행)과
+**Quit**(종료)이 있습니다. 종료하면 배터리 메뉴 막대 항목이 앱을 처음 실행하기 전 상태로 정확히 돌아갑니다.
 
 ### 삭제
 

@@ -51,15 +51,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem.menu = menu
     }
 
+    /// Our own icon appears only while on battery, next to the system battery
+    /// item; on AC the menu bar shows nothing from us.
     private func refresh(onBattery battery: Bool) {
-        let symbol = battery ? "bolt.slash" : "bolt.fill"
-        let image = NSImage(systemSymbolName: symbol,
-                            accessibilityDescription: battery ? "On battery" : "On power adapter")
+        statusItem.isVisible = battery
+        guard battery else { return }
+        let image = NSImage(systemSymbolName: "bolt.slash", accessibilityDescription: "On battery")
         image?.isTemplate = true
         statusItem.button?.image = image
-        stateItem.title = battery
-            ? "On battery: battery icon shown"
-            : "On power adapter: battery icon hidden"
+        stateItem.title = "On battery: battery icon shown"
     }
 
     func menuWillOpen(_ menu: NSMenu) {
