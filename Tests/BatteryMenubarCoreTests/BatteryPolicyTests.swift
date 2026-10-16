@@ -44,20 +44,24 @@ final class BatteryPolicyTests: XCTestCase {
         XCTAssertEqual(policy.hideValue, 24)
     }
 
-    // MARK: Values written on power change
+    // MARK: Icon for the current charge level
 
-    func testOnBatteryShowsWithPercentage() {
-        let policy = BatteryPolicy(original: .value(25), hideOverride: nil)
-        let change = policy.change(onBattery: true)
-        XCTAssertEqual(change.battery, 18)
-        XCTAssertEqual(change.showPercentage, true)
+    func testSymbolNameSteps() {
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: 0), "battery.0percent")
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: 12), "battery.0percent")
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: 13), "battery.25percent")
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: 37), "battery.25percent")
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: 38), "battery.50percent")
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: 62), "battery.50percent")
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: 63), "battery.75percent")
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: 87), "battery.75percent")
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: 88), "battery.100percent")
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: 100), "battery.100percent")
     }
 
-    func testOnACHidesAndLeavesPercentageAlone() {
-        let policy = BatteryPolicy(original: .value(25), hideOverride: nil)
-        let change = policy.change(onBattery: false)
-        XCTAssertEqual(change.battery, 25)
-        XCTAssertNil(change.showPercentage)
+    func testSymbolNameClampsOutOfRange() {
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: -5), "battery.0percent")
+        XCTAssertEqual(BatteryPolicy.symbolName(percent: 140), "battery.100percent")
     }
 
     // MARK: Restoring on quit

@@ -7,11 +7,16 @@ public enum PrefValue: Equatable {
     case value(Int)
 }
 
-/// What to write to Control Center's per-host preferences on a power change.
-public struct PrefChange: Equatable {
-    public let battery: Int
-    /// `true` to force "show percentage" on; `nil` to leave the key untouched.
-    public let showPercentage: Bool?
+/// A snapshot of the Mac's power source.
+public struct PowerStatus: Equatable {
+    public let onBattery: Bool
+    /// Charge level, 0...100.
+    public let percent: Int
+
+    public init(onBattery: Bool, percent: Int) {
+        self.onBattery = onBattery
+        self.percent = percent
+    }
 }
 
 /// Pure decision logic for the menu bar battery item. No I/O.
@@ -40,18 +45,26 @@ public struct BatteryPolicy: Equatable {
         stored ?? current
     }
 
+    /// Value that hides the system battery item while the app runs.
     public var hideValue: Int {
         if let hideOverride { return hideOverride }
         if case .value(let v) = original, v != Self.showValue { return v }
         return Self.defaultHideValue
     }
 
-    public func change(onBattery: Bool) -> PrefChange {
-        onBattery
-            ? PrefChange(battery: Self.showValue, showPercentage: true)
-            : PrefChange(battery: hideValue, showPercentage: nil)
-    }
-
     /// What to put back when the app quits normally.
     public var restoreValue: PrefValue { original }
+
+    /// SF Symbol for a charge level, in the five steps the system glyphs come in.
+    public static func symbolName(percent: Int) -> String {
+        let step: Int
+        switch max(0, min(100, percent)) {
+        case 0...12: step = 0
+        case 13...37: step = 25
+        case 38...62: step = 50
+        case 63...87: step = 75
+        default: step = 100
+        }
+        return "battery.\(step)percent"
+    }
 }

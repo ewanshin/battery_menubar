@@ -1,14 +1,14 @@
 import Foundation
 
-/// Applies `BatteryPolicy` to Control Center preferences, writing only when
-/// the power state actually changes, and restores the user's original
-/// setting on a normal quit.
+/// Hides the system battery item for as long as the app runs, tracks the
+/// power status for the app's own menu bar item, and restores the user's
+/// original setting on a normal quit.
 public final class BatteryController {
     public let policy: BatteryPolicy
-    /// Current state, `nil` until the first `update`.
-    public private(set) var onBattery: Bool?
-    /// Called whenever the state flips (not on repeated identical updates).
-    public var onChange: ((Bool) -> Void)?
+    /// Latest power status, `nil` until the first `update`.
+    public private(set) var status: PowerStatus?
+    /// Called whenever the status changes (not on repeated identical updates).
+    public var onChange: ((PowerStatus) -> Void)?
 
     private let prefs: ControlCenterPrefs
     private let store: OriginalValueStore
@@ -19,15 +19,13 @@ public final class BatteryController {
         let original = BatteryPolicy.resolveOriginal(stored: store.load(), current: prefs.readBattery())
         store.save(original)
         self.policy = BatteryPolicy(original: original, hideOverride: hideOverride)
+        prefs.writeBattery(.value(policy.hideValue))
     }
 
-    public func update(onBattery battery: Bool) {
-        if battery == onBattery { return }
-        onBattery = battery
-        let change = policy.change(onBattery: battery)
-        prefs.writeBattery(.value(change.battery))
-        if let show = change.showPercentage { prefs.writeShowPercentage(show) }
-        onChange?(battery)
+    public func update(_ newStatus: PowerStatus) {
+        if newStatus == status { return }
+        status = newStatus
+        onChange?(newStatus)
     }
 
     public func restoreAndForget() {

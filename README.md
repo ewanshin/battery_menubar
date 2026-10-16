@@ -26,10 +26,10 @@ Requires macOS 13 or later. Tested on macOS 27 (Apple Silicon).
    xattr -d com.apple.quarantine /Applications/BatteryMenubar.app
    ```
 
-4. Unplug the adapter. The battery item appears together with a small slashed-bolt icon;
-   open that icon's menu and turn on **Launch at Login**.
+4. Unplug the adapter. A battery icon with the percentage appears; open its menu and turn on
+   **Launch at Login**.
 
-Replug the adapter and both icons disappear.
+Replug the adapter and the icon disappears.
 
 ### Build it yourself
 
@@ -44,10 +44,10 @@ cd battery_menubar
 
 ## Use
 
-While on the power adapter nothing is shown. While on battery, the system battery item
-(with percentage) appears together with a small slashed-bolt icon that opens the app's menu:
-**Launch at Login** and **Quit**. Quitting puts the battery menu bar item back exactly as it
-was before the app first ran.
+While on the power adapter nothing is shown. While on battery, the app's own battery icon
+with the percentage appears; its menu has **Launch at Login** and **Quit**. The system battery
+item stays hidden while the app runs. Quitting puts it back exactly as it was before the app
+first ran.
 
 ## Uninstall
 
@@ -69,16 +69,15 @@ of `com.apple.controlcenter`:
 | `Battery`               | `25`  | Don't Show in Menu Bar  |
 | `BatteryShowPercentage` | `1`   | Show percentage         |
 
-The app watches `IOPSNotificationCreateRunLoopSource` and, whenever the providing
-power source changes, writes:
+While running, the app keeps the system item hidden:
 
 ```bash
-# on battery
-defaults -currentHost write com.apple.controlcenter Battery -int 18
-defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true
-# on AC
 defaults -currentHost write com.apple.controlcenter Battery -int 25
 ```
+
+and draws its own menu bar item from IOKit power-source data (`IOPSCopyPowerSourcesInfo`),
+updated through `IOPSNotificationCreateRunLoopSource` whenever the source or charge level changes.
+The item is visible only while the providing source is the battery.
 
 Note that the non-host domain (`defaults write com.apple.controlcenter ...` without
 `-currentHost`), which most online guides mention, has no effect on recent macOS versions.
@@ -144,10 +143,10 @@ macOS 13 이상이 필요합니다. macOS 27 (Apple Silicon)에서 테스트했�
    xattr -d com.apple.quarantine /Applications/BatteryMenubar.app
    ```
 
-4. 어댑터를 뽑으면 배터리 항목과 함께 작은 빗금 번개 아이콘이 나타납니다.
+4. 어댑터를 뽑으면 퍼센트가 표시된 배터리 아이콘이 나타납니다.
    그 아이콘의 메뉴를 열어 **Launch at Login**을 켜 두세요.
 
-어댑터를 다시 꽂으면 두 아이콘 모두 사라집니다.
+어댑터를 다시 꽂으면 아이콘이 사라집니다.
 
 #### 직접 빌드
 
@@ -162,9 +161,9 @@ cd battery_menubar
 
 ### 사용
 
-어댑터 연결 중에는 아무것도 표시하지 않습니다. 배터리 사용 중에는 시스템 배터리 항목(퍼센트 포함)과
-함께 작은 빗금 번개 아이콘이 나타나며, 이 아이콘의 메뉴에 **Launch at Login**(로그인 시 실행)과
-**Quit**(종료)이 있습니다. 종료하면 배터리 메뉴 막대 항목이 앱을 처음 실행하기 전 상태로 정확히 돌아갑니다.
+어댑터 연결 중에는 아무것도 표시하지 않습니다. 배터리 사용 중에는 앱 자체의 배터리 아이콘과 퍼센트가
+나타나며, 메뉴에 **Launch at Login**(로그인 시 실행)과 **Quit**(종료)이 있습니다. 앱이 실행 중인 동안
+시스템 배터리 항목은 숨겨져 있고, 종료하면 앱을 처음 실행하기 전 상태로 정확히 돌아갑니다.
 
 ### 삭제
 
@@ -186,16 +185,15 @@ cd battery_menubar
 | `Battery`               | `25`  | 메뉴 막대에 표시 안 함 |
 | `BatteryShowPercentage` | `1`   | 퍼센트 표시            |
 
-앱은 `IOPSNotificationCreateRunLoopSource`로 전원 소스 변경을 감시하다가
-바뀔 때마다 다음을 기록합니다:
+앱은 실행 중인 동안 시스템 항목을 숨겨 둡니다:
 
 ```bash
-# 배터리일 때
-defaults -currentHost write com.apple.controlcenter Battery -int 18
-defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true
-# 어댑터 연결 시
 defaults -currentHost write com.apple.controlcenter Battery -int 25
 ```
+
+그리고 IOKit 전원 소스 정보(`IOPSCopyPowerSourcesInfo`)로 자체 메뉴 막대 항목을 그립니다.
+전원 소스나 잔량이 바뀌면 `IOPSNotificationCreateRunLoopSource` 알림으로 갱신되며,
+항목은 배터리가 전원을 공급할 때만 보입니다.
 
 인터넷에 많이 돌아다니는 `-currentHost` 없는 `defaults write com.apple.controlcenter ...`
 방식은 최신 macOS에서는 아무 효과가 없습니다.

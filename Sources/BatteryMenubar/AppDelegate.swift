@@ -19,13 +19,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         log.info("started (original = \(String(describing: self.controller.policy.original), privacy: .public), hide = \(self.controller.policy.hideValue))")
 
         setUpStatusItem()
-        controller.onChange = { [weak self] battery in
-            self?.log.info("\(battery ? "on battery -> show" : "on AC -> hide", privacy: .public)")
-            self?.refresh(onBattery: battery)
+        controller.onChange = { [weak self] status in
+            self?.log.info("\(status.onBattery ? "on battery" : "on AC", privacy: .public) \(status.percent)%")
+            self?.refresh(status)
         }
-        controller.update(onBattery: PowerWatcher.isOnBattery())
+        controller.update(PowerWatcher.current())
         watcher = PowerWatcher { [weak self] in
-            self?.controller.update(onBattery: PowerWatcher.isOnBattery())
+            self?.controller.update(PowerWatcher.current())
         }
     }
 
@@ -34,10 +34,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         log.info("quit -> restored original battery setting")
     }
 
-    // MARK: Menu
+    // MARK: Menu bar item
 
     private func setUpStatusItem() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        statusItem.button?.imagePosition = .imageLeading
+        statusItem.button?.font = NSFont.menuBarFont(ofSize: 0)
         let menu = NSMenu()
         menu.delegate = self
         stateItem.isEnabled = false
@@ -51,15 +53,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem.menu = menu
     }
 
-    /// Our own icon appears only while on battery, next to the system battery
-    /// item; on AC the menu bar shows nothing from us.
-    private func refresh(onBattery battery: Bool) {
-        statusItem.isVisible = battery
-        guard battery else { return }
-        let image = NSImage(systemSymbolName: "bolt.slash", accessibilityDescription: "On battery")
+    /// A battery glyph plus percentage, shown only while on battery. On AC the
+    /// menu bar shows nothing from the app (and the system item stays hidden).
+    private func refresh(_ status: PowerStatus) {
+        statusItem.isVisible = status.onBattery
+        guard status.onBattery, let button = statusItem.button else { return }
+        let image = NSImage(systemSymbolName: BatteryPolicy.symbolName(percent: status.percent),
+                            accessibilityDescription: "Battery \(status.percent)%")
         image?.isTemplate = true
-        statusItem.button?.image = image
-        stateItem.title = "On battery: battery icon shown"
+        button.image = image
+        button.title = " \(status.percent)%"
+        stateItem.title = "\(status.percent)%, on battery"
     }
 
     func menuWillOpen(_ menu: NSMenu) {
@@ -79,8 +83,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         } catch {
             log.error("launch at login failed: \(error.localizedDescription, privacy: .public)")
-            let alert = NSAlert(error: error)
-            alert.runModal()
+            NSAlert(error: error).runModal()
         }
     }
 
